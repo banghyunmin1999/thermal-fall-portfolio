@@ -119,8 +119,6 @@
 
 -----
 
------
-
 ### 👥 Contributors
 
 **Hyunmin Bang (방현민)**  
@@ -137,7 +135,6 @@
 🔗 LinkedIn: [https://www.linkedin.com/in/eunji-choi-b3bbb788](https://www.linkedin.com/in/eunji-choi-b3bbb788)  
 🤗 Hugging Face: [https://huggingface.co/EunjiChoi] (https://huggingface.co/EunjiChoi)
 
------
 
 -----
 
