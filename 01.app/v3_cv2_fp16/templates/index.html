@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fallwatch Live Stream</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        h1 {
+            color: #333;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 0;
+        }
+        .stream-container {
+            flex-basis: 640px; /* 비디오 기본 너비 */
+            flex-grow: 1;
+            border: 5px solid #ccc;
+            border-radius: 10px;
+            background-color: #000;
+            overflow: hidden; /* 추가됨 */
+        }
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 변경됨 */
+            display: block;
+        }
+        .info-container {
+            flex-basis: 400px; /* 정보 패널 기본 너비 */
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        /* 상태 정보 표시 스타일 */
+        #status-container {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #status-container h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1em;
+            margin: 8px 0;
+        }
+        .status-item span {
+            font-weight: bold;
+        }
+        #alert-message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: center;
+            display: none; /* 평소에는 숨김 */
+        }
+        .alert-warning {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #c62828;
+        }
+        .alert-caution {
+            background-color: #fff8e1;
+            color: #f57f17;
+            border: 1px solid #f57f17;
+        }
+
+        /* 🚀 알림 로그를 위한 스타일 추가 */
+        #log-container {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #log-container h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        #alert-log-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px; /* 로그가 많아지면 스크롤 생성 */
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+        #alert-log-list li {
+            padding: 8px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        #alert-log-list li:first-child {
+            font-weight: bold; /* 가장 최신 로그를 강조 */
+        }
+    </style>
+</head>
+<body>
+    <h1>📹 Fallwatch 실시간 스트리밍</h1>
+    <!-- 영상 스트림 표시 -->
+  <!-- <div style="text-align: center; margin-top: 16px;">
+    <img id="video-stream" src="/video_feed" style="max-width:90%; border:2px solid #ccc; border-radius:12px;">
+  </div> -->
+
+    <div class="main-container">
+        <div class="stream-container">
+            <img src="{{ url_for('video_feed') }}" alt="Live Stream">
+        </div>
+
+        <div class="info-container">
+            <div id="status-container">
+                <h3>상태 정보 (최근 10초)</h3>
+                <div class="status-item">Normal: <span id="normal-count">0</span></div>
+                <div class="status-item">Caution: <span id="caution-count">0</span></div>
+                <div class="status-item">Warning: <span id="warning-count">0</span></div>
+                <div id="alert-message"></div>
+            </div>
+
+            <div id="log-container">
+                <h4>알림 로그</h4>
+                <ul id="alert-log-list">
+                </ul>
+            </div>
+        </div>
+    </div>
+<!-- 종료 버튼 폼: 이 코드를 index.html의 원하는 위치에 추가하세요 -->
+<form action="/shutdown" method="post" id="shutdown-form" style="margin-top: 24px; text-align: center;">
+    <button type="submit" id="shutdown-btn">
+        <span style="font-size:1.2em; vertical-align:middle;">&#x26A0;&#xFE0F;</span>
+        서버 안전 종료
+    </button>
+</form>
+
+<style>
+#shutdown-btn {
+    background: linear-gradient(90deg, #ff5858 0%, #f09819 100%);
+    color: white;
+    font-size: 1.15em;
+    font-weight: bold;
+    padding: 0.8em 2.5em;
+    border: none;
+    border-radius: 2em;
+    box-shadow: 0 4px 16px rgba(255,88,88,0.10);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 10px;
+}
+#shutdown-btn:hover {
+    background: linear-gradient(90deg, #f09819 0%, #ff5858 100%);
+    transform: scale(1.04);
+}
+</style>
+
+<script>
+document.getElementById('shutdown-form').onsubmit = function() {
+    return confirm('정말로 서버를 안전하게 종료하시겠습니까?');
+};
+</script>
+
+
+    <script>
+        // DOM 요소 가져오기
+        const normalCountElem = document.getElementById('normal-count');
+        const cautionCountElem = document.getElementById('caution-count');
+        const warningCountElem = document.getElementById('warning-count');
+        const alertMessageElem = document.getElementById('alert-message');
+        
+        // 🚀 로그 목록 DOM 요소 추가
+        const alertLogListElem = document.getElementById('alert-log-list');
+
+        // 🚀 이전에 수신된 알림 메시지를 저장할 변수 (여기서는 이제 필요 없지만 혹시 모를 경우를 위해 남겨둡니다.)
+        let lastReceivedAlert = "";
+
+        const eventSource = new EventSource("{{ url_for('status_feed') }}");
+
+        eventSource.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            const counts = data.counts;
+            const newMessage = data.message;
+
+            // 화면의 카운트 업데이트
+            normalCountElem.textContent = counts['1'] || 0; 
+            cautionCountElem.textContent = counts['0'] || 0;
+            warningCountElem.textContent = counts['2'] || 0;
+
+            // 현재 알림 메시지 업데이트
+            if (newMessage) {
+                alertMessageElem.textContent = newMessage;
+                alertMessageElem.style.display = 'block';
+                if (newMessage.includes('경고')) {
+                    alertMessageElem.className = 'alert-warning';
+                } else if (newMessage.includes('주의')) {
+                    alertMessageElem.className = 'alert-caution';
+                } else { // 메시지가 있는데 경고/주의가 아니면 기본 스타일로
+                    alertMessageElem.className = ''; 
+                }
+            } else {
+                alertMessageElem.style.display = 'none';
+            }
+
+            // 🚀 새로운 알림 메시지이거나, 메시지가 비어있지 않을 경우 항상 로그에 추가
+            // (즉, 이전 메시지와 달라도, 같아도 newMessage가 있으면 로그에 추가)
+            if (newMessage) { // 메시지가 비어있지 않으면 로그에 추가
+                // 현재 시간을 이쁘게 포맷
+                const timestamp = new Date().toLocaleTimeString('ko-KR');
+
+                // 새로운 리스트 아이템(li) 생성
+                const listItem = document.createElement('li');
+                listItem.textContent = `[${timestamp}] ${newMessage}`;
+                
+                // 로그 목록의 가장 위쪽에 새로운 로그 추가
+                alertLogListElem.prepend(listItem);
+            }
+
+            // 🚀 마지막으로 수신된 메시지를 현재 메시지로 업데이트 (이 로직은 이제 메시지 중복 체크에 사용되지 않습니다.)
+            lastReceivedAlert = newMessage;
+        };
+
+        eventSource.onerror = function(err) {
+            console.error("EventSource failed:", err);
+        };
+    </script>
+</body>
+</html>
